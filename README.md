@@ -1,78 +1,101 @@
-# L2 – Kodowanie Huffmana, część 1: model i koder
+# TIK-Lab2 – Kodowanie Huffmana
 
-## Cel laboratorium
-Celem zajęć jest rozpoczęcie realizacji zadania Z2 – stworzenie kompresora Huffmana umożliwiającego kompresję i dekompresję dowolnych plików z zachowaniem identyczności danych bajt po bajcie.
+Projekt realizowany w ramach laboratorium Teorii Informacji i Kodowania (L2).
 
-## Zakres L2
-- Wyznaczanie liczności 256 możliwych symboli na podstawie pliku wejściowego.
-- Implementacja kolejki priorytetowej jako kopca binarnego typu min.
-- Budowa drzewa Huffmana.
-- Deterministyczne rozstrzyganie remisów w kolejce priorytetowej.
+## Opis projektu
+
+Program w języku C implementujący kompresję danych z wykorzystaniem algorytmu Huffmana.
+
+Aktualna wersja umożliwia zliczanie symboli, budowanie drzewa Huffmana, generowanie tablicy kodów oraz zapis skompresowanych danych w formacie binarnym HUF1.
+
+## Struktura projektu
+
+| Plik | Opis |
+|---|---|
+| `main.c` | Główna funkcja programu i obsługa argumentów |
+| `huffman.c/.h` | Algorytm Huffmana, zliczanie symboli, drzewo i kody |
+| `heap.c/.h` | Kolejka priorytetowa oparta na kopcu binarnym typu min |
+| `bitio.c/.h` | Odczyt i zapis danych bit po bicie |
+| `Makefile` | Automatyzacja kompilacji |
+| `abracadabra.txt` | Plik testowy |
+| `huff.exe` | Skompilowany program dla Windows |
+
+## Funkcjonalności
+
+- Zliczanie wystąpień 256 możliwych symboli.
+- Budowanie deterministycznego drzewa Huffmana.
+- Obsługa kolejki priorytetowej z wykorzystaniem kopca binarnego.
 - Generowanie tablicy kodów Huffmana.
-- Zapis nagłówka i strumienia zakodowanych danych z wykorzystaniem modułu `BitWriter`.
+- Obliczanie entropii i średniej długości kodu.
+- Kompresja plików do formatu HUF1.
+- Obsługa pustych plików i plików zawierających jeden rodzaj symbolu.
 
-## Algorytm Huffmana
-1. Każdy symbol o niezerowej liczności zostaje liściem drzewa.
-2. Liście trafiają do kolejki priorytetowej.
-3. Z kolejki pobierane są dwa węzły o najmniejszych wagach.
-4. Węzły zostają połączone w nowy węzeł o wadze równej sumie ich wag.
-5. Nowy węzeł trafia ponownie do kolejki.
-6. Proces powtarza się do uzyskania jednego węzła – korzenia drzewa.
-7. Kody symboli wyznaczane są na podstawie ścieżek od korzenia do liści:
-   - `0` – lewe dziecko,
-   - `1` – prawe dziecko.
+## Kompilacja
 
-## Deterministyczne rozstrzyganie remisów
-W przypadku jednakowych wag pierwszeństwo ma węzeł o mniejszym numerze:
-- Liście otrzymują numery odpowiadające wartościom symboli (0–255).
-- Węzły wewnętrzne otrzymują numery od 256, zgodnie z kolejnością tworzenia.
-
-Zapewnia to identyczne odtworzenie drzewa przez dekoder.
-
-## Format pliku skompresowanego
-
-| Pole | Rozmiar | Opis |
-|---|---:|---|
-| Sygnatura | 4 B | `HUF1` |
-| Rozmiar oryginału | 8 B | `uint64_t`, little endian |
-| Liczności | 256 × 4 B | `uint32_t` dla każdego symbolu, little endian |
-| Dane | Pozostała część | Strumień kodów, MSB first |
-
-Ostatni bajt strumienia kodów jest dopełniany zerami. Dekoder kończy pracę po odtworzeniu zadeklarowanej liczby symboli.
-
-## Przypadki szczególne
-- Pusty plik – brak symboli do zakodowania.
-- Plik zawierający tylko jeden rodzaj symbolu – słowo kodowe o długości 1 bitu.
-
-## Punkt kontrolny
-Dla pliku `abracadabra.txt` (zawartość `abracadabra`, bez znaku końca linii) należy przygotować:
-- Tablicę kodów Huffmana.
-- Średnią długość słowa kodowego.
-- Porównanie średniej długości kodu z entropią pliku.
-
-## Wykorzystane zagadnienia
-- Kodowanie Huffmana.
-- Entropia źródła.
-- Kod przedrostkowy.
-- Kolejka priorytetowa.
-- Kopiec binarny typu min.
-- Operacje na bitach i bajtach.
-- Złożoność obliczeniowa algorytmów.
-
-## Pytania kontrolne
-1. Dlaczego kod Huffmana jest kodem przedrostkowym i jakie ma to znaczenie dla dekodowania?
-2. Dlaczego dla kodu Huffmana zachodzi nierówność \(H \leq L < H+1\)?
-3. Jakie byłyby skutki niedeterministycznego rozstrzygania remisów w kolejce priorytetowej?
-4. Jaka jest złożoność obliczeniowa budowy drzewa dla \(k\) różnych symboli przy użyciu kopca?
-
-## Cel końcowy zadania Z2
-Program `huff` powinien obsługiwać:
+Wymagany kompilator GCC oraz Make.
 
 ```bash
-huff c <wejście> <wyjście>  # kompresja
-huff d <wejście> <wyjście>  # dekompresja
+make
 ```
 
-Po dekompresji plik musi być bajt w bajt identyczny z oryginałem.
+Usuwanie plików kompilacji:
 
-**Kontynuacja:** L3 – dekoder, pomiary i rozszerzenie o kanoniczny kod Huffmana.
+```bash
+make clean
+```
+
+## Uruchamianie
+
+Wyświetlenie tabeli kodów i statystyk:
+
+```bash
+./huff t abracadabra.txt
+```
+
+Kompresja pliku:
+
+```bash
+./huff c wejscie.txt wyjscie.huf
+```
+
+## Przykład działania
+
+Dla pliku `abracadabra.txt` zawierającego tekst:
+
+```text
+abracadabra
+```
+
+Program generuje następujące kody:
+
+| Symbol | Liczność | Kod | Długość |
+|---|---:|---|---:|
+| a | 5 | 0 | 1 |
+| b | 2 | 110 | 3 |
+| c | 1 | 100 | 3 |
+| d | 1 | 101 | 3 |
+| r | 2 | 111 | 3 |
+
+Przykładowe statystyki:
+
+```text
+Rozmiar pliku: 11 bajtow
+
+Srednia dlugosc kodu L: 2.636364 bitow/symbol
+Entropia H:              2.040373 bitow/symbol
+```
+
+## Format HUF1
+
+Nagłówek pliku skompresowanego zawiera:
+- Sygnaturę `HUF1` (4 bajty).
+- Rozmiar oryginalnego pliku (8 bajtów, little endian).
+- Liczności 256 symboli (256 × 4 bajty, little endian).
+
+Pozostałą część stanowi strumień kodów Huffmana zapisany bitowo w kolejności MSB first.
+
+## Status projektu
+
+**L2 – Koder:** zaimplementowany.
+
+**L3 – Dekoder i rozszerzenia:** do realizacji.
