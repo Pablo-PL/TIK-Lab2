@@ -4,23 +4,24 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct Node {
+#define HUFF_SYMBOLS 256
+#define HUFF_MAX_NODES (2 * HUFF_SYMBOLS - 1)
+
+typedef struct HuffNode {
     uint64_t weight;
     uint16_t number;
     int symbol; /* 0..255 dla liscia, -1 dla wezla wewnetrznego */
-    struct Node *left;
-    struct Node *right;
-} Node;
+    struct HuffNode *left;
+    struct HuffNode *right;
+} HuffNode;
 
 typedef struct {
-    Node **items;
+    HuffNode *items[HUFF_MAX_NODES];
     size_t size;
-    size_t capacity;
 } MinHeap;
 
-int heap_init(MinHeap *heap, size_t capacity);
-void heap_destroy(MinHeap *heap);
-int heap_push(MinHeap *heap, Node *node);
-Node *heap_pop_min(MinHeap *heap);
+void heap_init(MinHeap *heap);
+int heap_push(MinHeap *heap, HuffNode *node);
+HuffNode *heap_pop_min(MinHeap *heap);
 
 #endif

@@ -1,16 +1,20 @@
 CC = gcc
-CFLAGS = -std=c11 -Wall -Wextra -O2
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -O2
 LDLIBS = -lm
 
 TARGET = huff
-SOURCE = main.c huffman.c heap.c bitio.c
+SOURCES = main.c huffman.c heap.c bitio.c
+OBJECTS = $(SOURCES:.c=.o)
 
 all: $(TARGET)
 
-$(TARGET): $(SOURCE)
-	$(CC) $(CFLAGS) $(SOURCE) -o $(TARGET) $(LDLIBS)
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) -o $(TARGET) $(LDLIBS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(TARGET) $(TARGET).exe
+	rm -f $(OBJECTS) $(TARGET) $(TARGET).exe
 
 .PHONY: all clean
